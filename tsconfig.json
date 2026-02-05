@@ -1,18 +1,34 @@
+// {
+//   "compilerOptions": {
+//     "target": "es2017",
+//     "module": "commonjs",
+//     "jsx": "react",
+//     "strict": false,
+//     "esModuleInterop": true,
+//     "allowJs": true,
+//     "skipLibCheck": true,
+//     "forceConsistentCasingInFileNames": true,
+//     "noEmit": true
+//   },
+//   "include": [
+//     "components/**/*",
+//     "pages/**/*",
+//     "server/**/*"
+//   ]
+// }
+
 {
   "compilerOptions": {
-    "target": "es2017",
-    "module": "commonjs",
     "jsx": "react",
-    "strict": false,
+    "target": "es2018",
+    "module": "commonjs",
+    "moduleResolution": "node",
     "esModuleInterop": true,
-    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": false,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "noEmit": true
+    "types": ["node", "express"]
   },
-  "include": [
-    "components/**/*",
-    "pages/**/*",
-    "server/**/*"
-  ]
+  "include": ["server/**/*", "pages/**/*"],
+  "exclude": ["node_modules"]
 }

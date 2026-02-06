@@ -97,6 +97,7 @@
 
 import path from 'path'
 process.chdir(path.join(__dirname, '..'))
+import auth from './middleware/auth';
 
 import express from 'express'
 import next from 'next'
@@ -113,9 +114,10 @@ const handle = app.getRequestHandler()
 
 app.prepare().then(() => {
   const server = express()
-
+server.use(express.json())
   const authRouter = require('./routes/auth').default
   server.use('/api/auth', authRouter)
+
 
   server.all('*', (req, res) => handle(req, res))
 

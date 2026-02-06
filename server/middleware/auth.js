@@ -1,15 +1,29 @@
-const { verify } = require('../services/jwt')
+// 
+
+const { verify } = require('../services/jwt');
 
 module.exports = function (req, res, next) {
-  const token = req.cookies.token
+  const token = req.cookies && req.cookies.token;
+
   if (!token) {
-    return res.status(401).json({ message: 'Unauthorized' })
+    if (req.path.startsWith('/api/')) {
+      return res.status(401).json({ message: 'Unauthorized: No token' });
+    }
+    return res.redirect('/index');
   }
 
   try {
-    req.user = verify(token)
-    next()
+    const decoded = verify(token);
+    
+    req.user = decoded;
+    
+    next();
   } catch (err) {
-    return res.status(401).json({ message: 'Invalid token' })
+    res.clearCookie('token');
+    
+    if (req.path.startsWith('/api/')) {
+      return res.status(401).json({ message: 'Invalid token' });
+    }
+    return res.redirect('/index');
   }
-}
+};

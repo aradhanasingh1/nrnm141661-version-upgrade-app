@@ -1,14 +1,14 @@
 import React from 'react';
 import Router from 'next/router';
-import {
-  Button,
-  TextField,
-  Paper,
-  Typography,
-  withStyles,
-  WithStyles,
-  createStyles,
-  Theme
+import { 
+  Button, 
+  TextField, 
+  Paper, 
+  Typography, 
+  withStyles, 
+  WithStyles, 
+  createStyles, 
+  Theme 
 } from '@material-ui/core';
 
 const styles = (theme: Theme) => createStyles({
@@ -37,6 +37,14 @@ const styles = (theme: Theme) => createStyles({
   submit: {
     marginTop: theme.spacing.unit * 3,
   },
+  backButton: {
+    marginTop: theme.spacing.unit * 1,
+    textAlign: 'center',
+    display: 'block',
+    cursor: 'pointer',
+    color: theme.palette.primary.main,
+    textDecoration: 'none'
+  },
   errorText: {
     color: theme.palette.error.main,
     textAlign: 'center',
@@ -47,16 +55,18 @@ const styles = (theme: Theme) => createStyles({
 interface State {
   email: string;
   password: string;
+  confirmPassword: string;
   error: string | null;
   loading: boolean;
 }
 
-interface Props extends WithStyles<typeof styles> { }
+interface Props extends WithStyles<typeof styles> {}
 
-class LoginPage extends React.Component<Props, State> {
+class RegisterPage extends React.Component<Props, State> {
   state: State = {
     email: '',
     password: '',
+    confirmPassword: '',
     error: null,
     loading: false
   };
@@ -64,54 +74,54 @@ class LoginPage extends React.Component<Props, State> {
   handleChange = (name: keyof State) => (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    this.setState({ [name]: event.target.value } as unknown as Pick<State, keyof State>);
+    this.setState({ [name]: event.target.value } as any);
   };
 
   handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    const { email, password } = this.state;
+    const { email, password, confirmPassword } = this.state;
+
+    if (password !== confirmPassword) {
+      return this.setState({ error: 'Passwords do not match' });
+    }
 
     this.setState({ loading: true, error: null });
 
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch('/api/auth/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
 
-      if (response.ok && data.success) {
-        // Success! Redirect to dashboard
-        Router.push('/dashboard');
+      if (response.ok) {
+        // Successfully registered, send to login
+        Router.push('/index');
       } else {
-        // Handle logic errors (User not found, invalid password)
-        this.setState({
-          error: data.message || 'Login failed',
-          loading: false
+        this.setState({ 
+          error: data.message || 'Registration failed', 
+          loading: false 
         });
       }
     } catch (err) {
-      // Handle network errors
-      this.setState({
-        error: 'A server error occurred. Please try again later.',
-        loading: false
+      this.setState({ 
+        error: 'Connection error. Please try again.', 
+        loading: false 
       });
     }
   };
 
   render() {
     const { classes } = this.props;
-    const { email, password, error, loading } = this.state;
+    const { email, password, confirmPassword, error, loading } = this.state;
 
     return (
       <main className={classes.layout}>
         <Paper className={classes.paper}>
           <Typography component="h1" variant="headline">
-            Sign in
+            Create Account
           </Typography>
           <form className={classes.form} onSubmit={this.handleSubmit}>
             <TextField
@@ -133,7 +143,17 @@ class LoginPage extends React.Component<Props, State> {
               onChange={this.handleChange('password')}
               disabled={loading}
             />
-
+            <TextField
+              label="Confirm Password"
+              fullWidth
+              required
+              margin="normal"
+              type="password"
+              value={confirmPassword}
+              onChange={this.handleChange('confirmPassword')}
+              disabled={loading}
+            />
+            
             {error && (
               <Typography variant="body2" className={classes.errorText}>
                 {error}
@@ -148,16 +168,16 @@ class LoginPage extends React.Component<Props, State> {
               disabled={loading}
               className={classes.submit}
             >
-              {loading ? 'Processing...' : 'Sign in'}
+              {loading ? 'Creating Account...' : 'Register'}
             </Button>
-            <Button
-              fullWidth
-              color="secondary"
-              className={classes.submit}
-              onClick={() => Router.push('/register')}
+
+            <Typography 
+              variant="caption" 
+              className={classes.backButton}
+              onClick={() => Router.push('/index')}
             >
-              No account? Register here
-            </Button>
+              Already have an account? Sign In
+            </Typography>
           </form>
         </Paper>
       </main>
@@ -165,4 +185,4 @@ class LoginPage extends React.Component<Props, State> {
   }
 }
 
-export default withStyles(styles)(LoginPage);
+export default withStyles(styles)(RegisterPage);

@@ -1,18 +1,15 @@
-import { MongoClient, Db } from 'mongodb'
+import { MongoClient, Db } from 'mongodb';
 
-const url = 'mongodb://localhost:27017'
-const dbName = 'legacy_app'
-
-let db: Db | null = null
+const uri = process.env.MONGO_URI || 'mongodb://localhost:27017/myapp';
+let client: MongoClient;
+let db: Db;
 
 export async function connect(): Promise<Db> {
-  if (db) return db
+  if (db) return db;
 
-  const client = await MongoClient.connect(url, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-  } as any)
-
-  db = client.db(dbName)
-  return db
+  client = new MongoClient(uri);
+  await client.connect();
+  db = client.db(); // default DB from URI
+  console.log('✅ Connected to MongoDB');
+  return db;
 }

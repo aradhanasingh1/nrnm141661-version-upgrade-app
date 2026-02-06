@@ -1,125 +1,76 @@
-// import express, { Request, Response } from 'express'
-// import next from 'next'
-// import bodyParser from 'body-parser'
-// import cookieParser from 'cookie-parser'
+import path from 'path';
+process.chdir(path.join(__dirname, '..'));
 
-// const dev = process.env.NODE_ENV !== 'production'
-// const app = next({ dev })
-// const handle = app.getRequestHandler()
+import express from 'express';
+import next from 'next';
+// import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
+import { connect } from './services/mongodb';
 
-// const PORT = 3000
+// Import routers directly
+import authRouter from './routes/auth';
+import apiRouter from './routes/api';
 
-// app.prepare().then(() => {
-//   const server = express()
+// dotenv.config();
 
-//   server.use(bodyParser.json())
-//   server.use(cookieParser())
+const port = process.env.PORT || 3000;
+const dev = process.env.NODE_ENV !== 'production';
 
-//   // API routes
-//   server.use('/api/auth', require('./routes/auth'))
+const app = next({ dev });
+const handle = app.getRequestHandler();
 
-//   // Next.js page handling
-//   server.get('*', (req: Request, res: Response) => {
-//     return handle(req, res)
-//   })
+app.prepare().then(async () => {
+  const server = express();
 
-//   server.listen(PORT, (err?: any) => {
-//     if (err) throw err
-//     console.log(`> Ready on http://localhost:${PORT}`)
-//   })
-// })
+  // Middleware
+  server.use(express.json());
+  server.use(cookieParser());
 
-// import express, { Request, Response } from 'express'
-// import next from 'next'
-// import bodyParser from 'body-parser'
-// import cookieParser from 'cookie-parser'
-// import authRoutes from './routes/auth' // <- ES import
- 
-// const dev = process.env.NODE_ENV !== 'production'
-// const app = next({ dev })
-// const handle = app.getRequestHandler()
- 
-// const PORT = 3000
- 
-// app.prepare().then(() => {
-//   const server = express()
- 
-//   server.use(bodyParser.json())
-//   server.use(cookieParser())
- 
-//   // API routes
-//   server.use('/api/auth', authRoutes) // <- use the imported router directly
- 
-//   // Next.js page handling
-//   server.get('*', (req: Request, res: Response) => {
-//     return handle(req, res)
-//   })
- 
-//   server.listen(PORT, (err?: any) => {
-//     if (err) throw err
-//     console.log(`> Ready on http://localhost:${PORT}`)
-//   })
-// })
+  // --- NEW: Global CORS + OPTIONS handling ---
+  server.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(200);
+    }
+    next();
+  });
 
-// import express from 'express'
-// import next from 'next'
-// import path from 'path'
+  // Health check
+  server.get('/health', (req, res) => {
+    res.json({ status: 'ok', env: process.env.NODE_ENV });
+  });
 
-// const port = 3000
-// const dev = process.env.NODE_ENV !== 'production'
+  // Test DB connection
+  try {
+    const db = await connect();
+    console.log('✅ MongoDB connected:', db.databaseName);
+  } catch (err) {
+    console.error('❌ MongoDB connection failed:', err);
+  }
 
-// async function start() {
-//   const app = next({
-//     dev,
-//     dir: path.join(__dirname, '..')
-//   })
+  // --- IMPORTANT: Mount your API routes BEFORE Next handler ---
+  server.use('/auth', authRouter);
+  server.use('/api', apiRouter);
 
-//   const handle = app.getRequestHandler()
-
-//   await app.prepare()   // ⭐ MUST be awaited before creating server
-
-//   const server = express()
-
-//   // API routes
-//   const authRouter = require('./routes/auth').default
-//   server.use('/api/auth', authRouter)
-
-//   // Let Next handle EVERYTHING else
-//   server.all('*', (req, res) => handle(req, res))
-
-//   server.listen(port, () => {
-//     console.log(`> Ready on http://localhost:${port}`)
-//   })
-// }
-
-// start()
-
-
-import path from 'path'
-process.chdir(path.join(__dirname, '..'))
-
-import express from 'express'
-import next from 'next'
-
-console.log('NODE_ENV =', process.env.NODE_ENV)
-
-const port = 3000
-const dev = true
-// const dev = process.env.NODE_ENV !== 'production'
-
-
-const app = next({ dev })
-const handle = app.getRequestHandler()
-
-app.prepare().then(() => {
-  const server = express()
-
-  const authRouter = require('./routes/auth').default
-  server.use('/api/auth', authRouter)
-
-  server.all('*', (req, res) => handle(req, res))
+  // Next.js page handling (catch‑all for everything else)
+  server.get('*', (req, res) => {
+    return handle(req, res);
+  });
+  server.post('*', (req, res) => {
+    return handle(req, res);
+  });
+  server.put('*', (req, res) => {
+    return handle(req, res);
+  });
+  server.delete('*', (req, res) => {
+    return handle(req, res);
+  });
 
   server.listen(port, () => {
-    console.log(`> Ready on http://localhost:${port}`)
-  })
-})
+    console.log(`> Ready on http://localhost:${port}`);
+  });
+});
+
+

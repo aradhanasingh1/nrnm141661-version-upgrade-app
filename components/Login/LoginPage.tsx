@@ -23,7 +23,7 @@ class LoginPage extends React.Component<{}, State> {
   handleChange = (name: keyof State) => (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    this.setState({ [name]: event.target.value } as Pick<State, keyof State>)
+    this.setState({ [name]: event.target.value } as unknown as Pick<State, keyof State>)
   }
 
   render() {

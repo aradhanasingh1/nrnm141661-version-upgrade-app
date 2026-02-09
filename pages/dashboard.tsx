@@ -1,7 +1,8 @@
-// pages/register.tsx
-import React from 'react';
-import DashboardPage from '../components/Dashbord/DashboardPage'
+import React from 'react'
+import DashboardLayout from '../components/Dashbord/DashboardLayout'
 
-export default function Register() {
-  return<DashboardPage />;
+const DashboardPage = () => {
+  return <DashboardLayout />
 }
+
+export default DashboardPage

@@ -27,13 +27,9 @@ router.post('/login', async (req: Request, res: Response) => {
     const db = await connect()
     const user = await db.collection('users').findOne({ email })
 
-    console.log('User found:', user) // Debugging log
-
     if (!user) {
-      return res.status(401).json({ message: 'User not found' })
+      return res.status(401).json({ message: 'User not found!, Please Register User..' })
     }
-
-    console.log('Comparing passwords',password,user.password) // Debugging log
 
     const isMatch = bcrypt.compareSync(password, user.password)
 

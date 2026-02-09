@@ -116,7 +116,11 @@ app.prepare().then(() => {
   const server = express()
 server.use(express.json())
   const authRouter = require('./routes/auth').default
+  const applicationRouter = require('./routes/application').default
+
+  
   server.use('/api/auth', authRouter)
+  server.use('/api/application', applicationRouter)
 
 
   server.all('*', (req, res) => handle(req, res))

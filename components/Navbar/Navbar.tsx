@@ -1,60 +1,53 @@
-    import React from 'react';
-import Router from 'next/router';
-import { 
-  AppBar, 
-  Toolbar, 
-  Typography, 
-  Button, 
-  withStyles, 
-  WithStyles, 
-  createStyles, 
-  Theme 
-} from '@material-ui/core';
+import React from 'react'
+import Router from 'next/router'
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  withStyles,
+  WithStyles,
+  createStyles,
+  Theme
+} from '@material-ui/core'
 
-const styles = (theme: Theme) => createStyles({
-  root: { flexGrow: 1 },
-  flex: { flex: 1 },
-  appBar: { backgroundColor: theme.palette.primary.main }
-});
+const styles = (theme: Theme) =>
+  createStyles({
+    appBar: {
+      zIndex: theme.zIndex.drawer + 1, // 👈 above sidebar
+      backgroundColor: theme.palette.primary.main
+    },
+    title: {
+      flexGrow: 1
+    }
+  })
 
 interface Props extends WithStyles<typeof styles> {
-  title: string;
+  title: string
 }
 
 class Navbar extends React.Component<Props> {
   handleLogout = async () => {
-    try {
-      const response = await fetch('/api/auth/logout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
-
-      if (response.ok) {
-        Router.push('/index');
-      }
-    } catch (err) {
-      console.error('Logout failed', err);
-    }
-  };
+    await fetch('/api/auth/logout', { method: 'POST' })
+    Router.push('/')
+  }
 
   render() {
-    const { classes, title } = this.props;
+    const { classes, title } = this.props
 
     return (
-      <div className={classes.root}>
-        <AppBar position="static" className={classes.appBar}>
-          <Toolbar>
-            <Typography variant="title" color="inherit" className={classes.flex}>
-              {title}
-            </Typography>
-            <Button color="inherit" onClick={this.handleLogout}>
-              Logout
-            </Button>
-          </Toolbar>
-        </AppBar>
-      </div>
-    );
+      <AppBar position="fixed" className={classes.appBar}>
+        <Toolbar>
+          <Typography variant="title" className={classes.title}>
+            {title}
+          </Typography>
+          <Button color="inherit" onClick={this.handleLogout}>
+            Logout
+          </Button>
+        </Toolbar>
+      </AppBar>
+    )
   }
 }
 
-export default withStyles(styles)(Navbar);
+export default withStyles(styles)(Navbar)

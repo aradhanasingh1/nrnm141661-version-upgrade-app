@@ -2,80 +2,67 @@ import * as express from 'express'
 import { Request, Response } from 'express'
 import { connect } from '../services/mongodb'
 import { v4 as uuidv4 } from 'uuid'
+import { createApplicationSchema } from '../validation/application.schema'
+import { ZodError } from 'zod'
 
 
 
 const router = express.Router()
 
-//create application
+// create application
 router.post('/create', async (req: Request, res: Response) => {
-    const {
-        applicantName,
-        applicantEmail,
-        applicantPhone,
-        amount,
-        currency,
-        applicationType,
-        purpose,
-        purposeDescription
-    } = req.body
+  try {
+    // ✅ Zod validation + normalization
+    const data = createApplicationSchema.parse(req.body)
 
-    if (
-        !applicantName ||
-        !applicantEmail ||
-        !applicantPhone ||
-        amount === undefined ||
-        isNaN(amount) ||
-        !currency ||
-        !applicationType ||
-        !purpose
-    ) {
-        return res.status(400).json({
-            message: 'Missing or invalid required fields'
-        })
+    const db = await connect()
+
+    const applicationNumber = `APP-${uuidv4()}`
+
+    // Extra safety check (optional but fine)
+    const existingApplication = await db
+      .collection('applications')
+      .findOne({ applicationNumber })
+
+    if (existingApplication) {
+      return res.status(409).json({
+        message: 'Application already present with this application number'
+      })
     }
 
-    try {
-        const db = await connect()
-
-        const application = {
-            applicationNumber: `APP-${ uuidv4()}`,
-            applicantName,
-            applicantEmail,
-            applicantPhone,
-            amount: Number(amount),
-            currency,
-            applicationType,
-            purpose,
-            purposeDescription: purposeDescription || '',
-            status: 'SUBMITTED',
-            stage: 'APPLICATION',
-            createdAt: new Date(),
-            updatedAt: new Date()
-        }
-
-        const existingApplication = await db
-            .collection('applications')
-            .findOne({ applicationNumber: application.applicationNumber })
-
-        if (existingApplication) {
-            return res.status(409).json({
-                message: 'Application already present with this application number'
-            })
-        }
-
-        await db.collection('applications').insertOne(application)
-
-        return res.status(201).json({
-            success: true,
-            message: 'Application created successfully',
-            applicationNumber: application.applicationNumber
-        })
-    } catch (err) {
-        console.error('Create application error:', err)
-        return res.status(500).json({ message: 'Server error' })
+    const application = {
+      applicationNumber,
+      ...data,
+      purposeDescription: data.purposeDescription || '',
+      status: 'SUBMITTED',
+      stage: 'APPLICATION',
+      createdAt: new Date(),
+      updatedAt: new Date()
     }
+
+    await db.collection('applications').insertOne(application)
+
+    return res.status(201).json({
+      success: true,
+      message: 'Application created successfully',
+      applicationNumber
+    })
+  } catch (err) {
+    // ❌ Zod validation error
+    if (err instanceof ZodError) {
+      console.warn('Validation error:', err.errors)
+      return res.status(400).json({
+        message: err.errors[0].message
+      })
+    }
+
+    console.error('Create application error:', err)
+    return res.status(500).json({
+      message: 'Server error'
+    })
+  }
 })
+
 
 //get all applications
 router.get('/applications', async (req: Request, res: Response) => {

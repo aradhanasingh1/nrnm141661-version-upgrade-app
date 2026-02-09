@@ -24,25 +24,37 @@ const CreateApplication: React.FC = () => {
     const [purposeDescription, setPurposeDescription] = useState('');
     const [currency, setCurrency] = useState<CurrencyType>(CurrencyType.INR);
 
-
     const submit = async () => {
-       const response = await axios.post('/api/application/create', {
-            applicantName: name,
-            applicantEmail: applicantEmail,
-            applicantPhone: applicantPhone,
-            amount: Number(amount),
-            currency: currency,
-            applicationType: applicationType,
-            purpose: purpose,
-            purposeDescription: purposeDescription
-        })
-        const data = response.data;
-        if(response.status === 201) {
-            alert(`Application created successfully! Your application number is ${data.applicationNumber}`)    
-        } else {
-            alert('Failed to create application. Please try again.')
-        }
+  try {
+    const response = await axios.post('/api/application/create', {
+      applicantName: name,
+      applicantEmail,
+      applicantPhone,
+      amount: Number(amount),
+      currency,
+      applicationType,
+      purpose,
+      purposeDescription
+    })
+
+    alert(
+      `Application created successfully! Your application number is ${response.data.applicationNumber}`
+    )
+  } catch (err: any) {
+    if (err.response && err.response.status === 400) {
+      alert(`Validation error: ${err.response.data.message}`)
+      return
     }
+
+    if (err.response && err.response.status === 409) {
+      alert(err.response.data.message)
+      return
+    }
+
+    console.error('Create application failed', err)
+    alert('Something went wrong. Please try again.')
+  }
+}
 
     return (
         <Paper style={{ padding: 24,  width: '100%' }}>

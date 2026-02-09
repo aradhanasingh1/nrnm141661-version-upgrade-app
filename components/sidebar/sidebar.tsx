@@ -12,7 +12,7 @@ import {
   WithStyles
 } from '@material-ui/core'
 
-const drawerWidth = 240
+const drawerWidth = 200
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -22,7 +22,7 @@ const styles = (theme: Theme) =>
     },
     drawerPaper: {
       width: drawerWidth,
-      top: 64 // 👈 BELOW NAVBAR (64px)
+      top: 64 
     },
     toolbarOffset: theme.mixins.toolbar
   })
@@ -41,7 +41,7 @@ const Sidebar: React.FC<Props> = ({ classes, onMenuSelect }) => {
       classes={{ paper: classes.drawerPaper }}
     >
       <Typography variant="title" style={{ padding: 16 }}>
-        Dashboard
+        MENU
       </Typography>
 
       <Divider />
@@ -54,13 +54,14 @@ const Sidebar: React.FC<Props> = ({ classes, onMenuSelect }) => {
         {open && (
           <>
             <ListItem button onClick={() => onMenuSelect('CREATE_APP')}>
-              <ListItemText inset primary="Create Application" />
+              <ListItemText primary="Create Application" />
             </ListItem>
             <ListItem button onClick={() => onMenuSelect('VIEW_APP')}>
-              <ListItemText inset primary="View Applications" />
+              <ListItemText primary="View Applications" />
             </ListItem>
           </>
         )}
+       
       </List>
     </Drawer>
   )

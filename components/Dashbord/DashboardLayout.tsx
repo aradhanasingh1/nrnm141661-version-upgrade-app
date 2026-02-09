@@ -5,7 +5,8 @@ import Sidebar from '../sidebar/sidebar'
 import CreateApplication from '../applications/CreateApplication'
 import ViewApplications from '../applications/ViewApplications'
 
-const drawerWidth = 240
+const NAVBAR_HEIGHT = 64
+const SIDEBAR_WIDTH = 2
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -14,9 +15,11 @@ const styles = (theme: Theme) =>
     },
     content: {
       flexGrow: 1,
-      padding: 24,
-      marginLeft: 2,
-      marginTop: 64 // 👈 navbar height
+      marginTop: NAVBAR_HEIGHT,              // space for navbar
+      marginLeft: SIDEBAR_WIDTH,             // space for sidebar
+      height: `calc(100vh - ${NAVBAR_HEIGHT}px)`, // 👈 KEY FIX
+      overflow: 'auto',                      // 👈 scroll only here
+      padding: 24
     }
   })
 
@@ -42,7 +45,9 @@ const DashboardLayout: React.FC<Props> = ({ classes }) => {
 
       <div className={classes.root}>
         <Sidebar onMenuSelect={setSelectedMenu} />
-        <main className={classes.content}>{renderContent()}</main>
+        <main className={classes.content}>
+          {renderContent()}
+        </main>
       </div>
     </>
   )

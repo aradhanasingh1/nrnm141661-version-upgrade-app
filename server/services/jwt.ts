@@ -1,9 +1,9 @@
-import jwt from 'jsonwebtoken'
+import jwt from "jsonwebtoken"
 
-const SECRET = 'super-secret-key'
+const SECRET = process.env.JWT_SECRET || "super-secret-key"
 
 export function sign(payload: object): string {
-  return jwt.sign(payload, SECRET, { expiresIn: '1d' })
+  return jwt.sign(payload, SECRET, { expiresIn: "1d" })
 }
 
 export function verify(token: string): any {

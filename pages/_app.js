@@ -1,14 +1,14 @@
-import React from 'react'
-import App, { Container } from 'next/app'
-import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
-import CssBaseline from '@material-ui/core/CssBaseline'
+import React from "react"
+import App from "next/app"
+import { MuiThemeProvider, createMuiTheme } from "@material-ui/core/styles"
+import CssBaseline from "@material-ui/core/CssBaseline"
 
 const theme = createMuiTheme()
 
 class MyApp extends App {
   componentDidMount() {
-    const jssStyles = document.querySelector('#jss-server-side')
-    if (jssStyles) {
+    const jssStyles = document.querySelector("#jss-server-side")
+    if (jssStyles && jssStyles.parentNode) {
       jssStyles.parentNode.removeChild(jssStyles)
     }
   }
@@ -17,12 +17,10 @@ class MyApp extends App {
     const { Component, pageProps } = this.props
 
     return (
-      <Container>
-        <MuiThemeProvider theme={theme}>
-          <CssBaseline />
-          <Component {...pageProps} />
-        </MuiThemeProvider>
-      </Container>
+      <MuiThemeProvider theme={theme}>
+        <CssBaseline />
+        <Component {...pageProps} />
+      </MuiThemeProvider>
     )
   }
 }

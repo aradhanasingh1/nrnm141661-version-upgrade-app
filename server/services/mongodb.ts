@@ -1,7 +1,7 @@
-import { MongoClient, Db } from 'mongodb'
+import { MongoClient, Db } from "mongodb"
 
-const url = 'mongodb://localhost:27017'
-const dbName = 'legacy_app'
+const url = process.env.MONGO_URL || "mongodb://localhost:27017"
+const dbName = process.env.DB_NAME || "legacy_app"
 
 let db: Db | null = null
 

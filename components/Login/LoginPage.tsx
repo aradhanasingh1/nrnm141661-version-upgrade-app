@@ -1,4 +1,5 @@
 import React from 'react'
+import Router from 'next/router'
 import {
   Grid,
   Paper,
@@ -7,14 +8,8 @@ import {
   Button,
   Divider
 } from '@material-ui/core'
-import { withStyles } from '@material-ui/core/styles'
-import styles from './Login.styles'
 
 type Mode = 'SIGN_IN' | 'AD_SIGN_IN' | 'RESET_PASSWORD' | 'REGISTER'
-
-interface Props {
-  classes: any
-}
 
 interface State {
   mode: Mode
@@ -24,7 +19,57 @@ interface State {
   confirmPassword: string
 }
 
-class LoginPage extends React.Component<Props, State> {
+const styles = {
+  root: {
+    minHeight: '100vh',
+    background: '#f2f2f2'
+  },
+  paper: {
+    width: 900,
+    minHeight: 420
+  },
+  leftPanel: {
+    padding: 32,
+    textAlign: 'center' as const,
+    borderRight: '1px solid #e0e0e0'
+  },
+  rightPanel: {
+    padding: 32
+  },
+  logo: {
+    width: 120,
+    marginBottom: 16
+  },
+  description: {
+    fontSize: 13,
+    color: '#555'
+  },
+  version: {
+    marginTop: 32,
+    fontSize: 12,
+    color: '#888'
+  },
+  signInTitle: {
+    marginBottom: 16
+  },
+  primaryButton: {
+    marginTop: 24
+  },
+  secondaryButton: {
+    marginTop: 16
+  },
+  backButton: {
+    marginTop: 8,
+    textTransform: 'none' as const,
+    color: '#1976d2'
+  },
+  footer: {
+    padding: 8,
+    textAlign: 'right' as const
+  }
+}
+
+class LoginPage extends React.Component<{}, State> {
   state: State = {
     mode: 'SIGN_IN',
     email: '',
@@ -50,7 +95,8 @@ class LoginPage extends React.Component<Props, State> {
       })
 
       if (res.ok) {
-        window.location.href = '/dashboard'
+        // window.location.href = '/dashboard'
+        Router.push('/dashboard')
       } else {
         const data = await res.json()
         alert(data.message || 'Login failed')
@@ -60,25 +106,6 @@ class LoginPage extends React.Component<Props, State> {
       alert('Server error')
     }
   }
-
-//   handleLogout = async () => {
-//   try {
-//     const res = await fetch('/auth/logout', {
-//       method: 'POST',
-//       headers: { 'Content-Type': 'application/json' }
-//     });
-
-//     if (res.ok) {
-//       window.location.href = '/index';   // redirect back to login page
-//     } else {
-//       alert('Logout failed');
-//     }
-//   } catch (err) {
-//     console.error(err);
-//     alert('Server error');
-//   }
-// };
-
 
   handleRegister = async () => {
     const { email, password, confirmPassword } = this.state
@@ -152,25 +179,31 @@ class LoginPage extends React.Component<Props, State> {
   }
 
   render() {
-    const { classes } = this.props
     const { mode } = this.state
 
     return (
-      <Grid container className={classes.root} justify="center" alignItems="center">
-        <Paper className={classes.paper} elevation={4}>
+      <Grid
+        container
+        style={styles.root}
+        justify="center"
+        alignItems="center"
+      >
+        <Paper style={styles.paper} elevation={4}>
           <Grid container>
             {/* LEFT PANEL */}
-            <Grid item xs={12} md={7} className={classes.leftPanel}>
-              <img src="/static/logo.png" alt="Logo" className={classes.logo} />
-              <Typography className={classes.description}>
+            <Grid item xs={12} md={7} style={styles.leftPanel}>
+              <img src="/static/logo.png" alt="Logo" style={styles.logo} />
+              <Typography style={styles.description}>
                 Welcome to OnBoard!, the world’s most powerful onboarding tool.
               </Typography>
-              <Typography className={classes.version}>v4.54.2-1</Typography>
+              <Typography style={styles.version}>
+                v4.54.2-1
+              </Typography>
             </Grid>
 
             {/* RIGHT PANEL */}
-            <Grid item xs={12} md={5} className={classes.rightPanel}>
-              <Typography variant="title" className={classes.signInTitle}>
+            <Grid item xs={12} md={5} style={styles.rightPanel}>
+              <Typography variant="title" style={styles.signInTitle}>
                 {mode === 'RESET_PASSWORD'
                   ? 'Reset Password'
                   : mode === 'REGISTER'
@@ -184,7 +217,7 @@ class LoginPage extends React.Component<Props, State> {
                 fullWidth
                 variant="outlined"
                 color="primary"
-                className={classes.primaryButton}
+                style={styles.primaryButton}
                 onClick={mode === 'REGISTER' ? this.handleRegister : this.handleLogin}
               >
                 {this.renderPrimaryButton()}
@@ -195,7 +228,7 @@ class LoginPage extends React.Component<Props, State> {
                   fullWidth
                   variant="outlined"
                   color="secondary"
-                  className={classes.secondaryButton}
+                  style={styles.secondaryButton}
                   onClick={() => this.setMode('REGISTER')}
                 >
                   REGISTER
@@ -205,7 +238,7 @@ class LoginPage extends React.Component<Props, State> {
               {mode !== 'SIGN_IN' && (
                 <Button
                   fullWidth
-                  className={classes.backButton}
+                  style={styles.backButton}
                   onClick={() => this.setMode('SIGN_IN')}
                 >
                   ← Back to Sign In
@@ -215,8 +248,11 @@ class LoginPage extends React.Component<Props, State> {
           </Grid>
 
           <Divider />
-          <div className={classes.footer}>
-            <Typography variant="caption">Powered by MVSi</Typography>
+
+          <div style={styles.footer}>
+            <Typography variant="caption">
+              Powered by MVSi
+            </Typography>
           </div>
         </Paper>
       </Grid>
@@ -224,5 +260,4 @@ class LoginPage extends React.Component<Props, State> {
   }
 }
 
-export default withStyles(styles)(LoginPage);
-
+export default LoginPage

@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@material-ui/core": "1.5.1",
+    "@material-ui/icons": "^1.1.1",
     "@zeit/next-typescript": "^1.1.1",
     "aws-sdk": "2.528.0",
     "bcryptjs": "2.4.3",
@@ -21,10 +22,12 @@
     "cors": "2.8.5",
     "express": "4.16.4",
     "jsonwebtoken": "8.5.1",
+    "jss": "^10.10.0",
     "mongodb": "3.6.10",
     "next": "6.1.1",
     "react": "16.8.6",
     "react-dom": "16.8.6",
+    "react-jss": "^10.10.0",
     "ws": "7.2.3"
   },
   "engines": {

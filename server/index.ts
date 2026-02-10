@@ -6,6 +6,8 @@ import next from 'next';
 // import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import { connect } from './services/mongodb';
+import applicationsRouter from './routes/applications'
+
 
 // Import routers directly
 import authRouter from './routes/auth';
@@ -53,8 +55,10 @@ app.prepare().then(async () => {
   // --- IMPORTANT: Mount your API routes BEFORE Next handler ---
   server.use('/auth', authRouter);
   server.use('/api', apiRouter);
+  server.use('/api/applications', applicationsRouter)
 
   // Next.js page handling (catch‑all for everything else)
+server.all('*', (req, res) => handle(req, res));
   server.get('*', (req, res) => {
     return handle(req, res);
   });

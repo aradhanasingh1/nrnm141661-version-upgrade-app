@@ -48,9 +48,9 @@ class Navbar extends React.Component<Props> {
             <Typography variant="title" color="inherit" className={classes.flex}>
               {title}
             </Typography>
-            <Button color="inherit" onClick={this.handleLogout}>
+            {/* <Button color="inherit" onClick={this.handleLogout}>
               Logout
-            </Button>
+            </Button> */}
           </Toolbar>
         </AppBar>
       </div>

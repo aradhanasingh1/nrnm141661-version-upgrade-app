@@ -93,7 +93,7 @@ class DashboardPage extends React.Component {
                   boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
                 }}
               >
-                <Typography variant="subtitle1">
+                <Typography variant="caption">
                   Chart Section {i}
                 </Typography>
 

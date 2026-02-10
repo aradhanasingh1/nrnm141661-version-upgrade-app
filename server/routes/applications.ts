@@ -14,12 +14,18 @@ router.post('/', async (req, res) => {
     const application: CreditApplication = {
       ...req.body,
       status: 'CREATED',
+      stage: 'INFO',
       createdAt: new Date()
+      
     }
+
+    console.log('Creating application:', application);
 
     const result = await db
       .collection(COLLECTION)
       .insertOne(application)
+
+      console.log('Application created with ID:', result);
 
     res.status(201).json({
       id: result.insertedId,

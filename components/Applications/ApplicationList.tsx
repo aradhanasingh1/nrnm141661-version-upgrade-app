@@ -57,13 +57,6 @@ class ApplicationsList extends React.Component<{}, State> {
       <Paper style={{ padding: 16 }}>
         {/* HEADER */}
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
-          <Button
-            variant="outlined"
-            onClick={this.goBack}
-            style={{ marginRight: 16 }}
-          >
-            ← Back
-          </Button>
 
           <Typography variant="title">
             Applications
@@ -71,6 +64,7 @@ class ApplicationsList extends React.Component<{}, State> {
         </div>
 
         {/* CREATE BUTTON */}
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <Button
           variant="contained"
           color="primary"
@@ -78,6 +72,15 @@ class ApplicationsList extends React.Component<{}, State> {
         >
           Create New Application
         </Button>
+        <Button
+            variant="contained"
+            color="primary"
+            onClick={this.goBack}
+            style={{ marginRight: 20 }}
+          >
+            ← Back
+          </Button>
+          </div>
 
         {/* CREATE DIALOG */}
         <CreateApplicationDialog

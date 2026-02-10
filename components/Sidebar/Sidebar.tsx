@@ -8,7 +8,6 @@ import {
   ListItemIcon
 } from '@material-ui/core'
 
-// Material UI icons (v1 compatible)
 import DashboardIcon from '@material-ui/icons/Dashboard'
 import LocalOfferIcon from '@material-ui/icons/LocalOffer'
 import AssignmentIcon from '@material-ui/icons/Assignment'
@@ -21,20 +20,43 @@ const drawerWidth = 230
 
 interface State {
   path: string
+  role: string
+}
+
+// ✅ Role → menu mapping
+const ROLE_MENU: Record<string, string[]> = {
+  ADMIN: [
+    '/dashboard',
+    '/offers',
+    '/applications',
+    '/customers',
+    '/prospects',
+    '/underwriting'
+  ],
+  UNDERWRITER: ['/dashboard', '/applications', '/underwriting'],
+  AGENT: ['/dashboard', '/applications']
 }
 
 class Sidebar extends React.Component<{}, State> {
   state: State = {
-    path: ''
+    path: '',
+    role: 'AGENT'
   }
 
   componentDidMount() {
-    // ✅ Safe for SSR
-    this.setState({ path: window.location.pathname })
+    const role = localStorage.getItem('role') || 'AGENT'
+    this.setState({
+      path: window.location.pathname,
+      role
+    })
   }
 
   isActive = (route: string) => {
     return this.state.path.startsWith(route)
+  }
+
+  canShow = (route: string) => {
+    return ROLE_MENU[this.state.role]?.includes(route)
   }
 
   navigate = (url: string) => {
@@ -69,108 +91,98 @@ class Sidebar extends React.Component<{}, State> {
           }
         }}
       >
-        {/* ===== MAIN MENU ===== */}
         <List>
 
-          <ListItem
-            button
-            style={this.menuItemStyle(this.isActive('/dashboard'))}
-            onClick={() => this.navigate('/dashboard')}
-          >
-            <ListItemIcon><DashboardIcon fontSize="small" /></ListItemIcon>
-            <ListItemText
-              primary="Dashboard"
-              primaryTypographyProps={{ style: this.textStyle(this.isActive('/dashboard')) }}
-            />
-          </ListItem>
+          {this.canShow('/dashboard') && (
+            <ListItem
+              button
+              style={this.menuItemStyle(this.isActive('/dashboard'))}
+              onClick={() => this.navigate('/dashboard')}
+            >
+              <ListItemIcon><DashboardIcon /></ListItemIcon>
+              <ListItemText
+                primary="Dashboard"
+                primaryTypographyProps={{
+                  style: this.textStyle(this.isActive('/dashboard'))
+                }}
+              />
+            </ListItem>
+          )}
 
-          <ListItem
-            button
-            style={this.menuItemStyle(this.isActive('/offers'))}
-            onClick={() => this.navigate('/offers')}
-          >
-            <ListItemIcon><LocalOfferIcon fontSize="small" /></ListItemIcon>
-            <ListItemText
-              primary="Offers"
-              primaryTypographyProps={{ style: this.textStyle(this.isActive('/offers')) }}
-            />
-          </ListItem>
+          {this.canShow('/offers') && (
+            <ListItem
+              button
+              style={this.menuItemStyle(this.isActive('/offers'))}
+              onClick={() => this.navigate('/offers')}
+            >
+              <ListItemIcon><LocalOfferIcon /></ListItemIcon>
+              <ListItemText primary="Offers" />
+            </ListItem>
+          )}
 
-          <ListItem
-            button
-            style={this.menuItemStyle(this.isActive('/applications'))}
-            onClick={() => this.navigate('/applications')}
-          >
-            <ListItemIcon><AssignmentIcon fontSize="small" /></ListItemIcon>
-            <ListItemText
-              primary="Applications"
-              primaryTypographyProps={{ style: this.textStyle(this.isActive('/applications')) }}
-            />
-          </ListItem>
+          {this.canShow('/applications') && (
+            <ListItem
+              button
+              style={this.menuItemStyle(this.isActive('/applications'))}
+              onClick={() => this.navigate('/applications')}
+            >
+              <ListItemIcon><AssignmentIcon /></ListItemIcon>
+              <ListItemText primary="Applications" />
+            </ListItem>
+          )}
 
-          <ListItem
-            button
-            style={this.menuItemStyle(this.isActive('/customers'))}
-            onClick={() => this.navigate('/customers')}
-          >
-            <ListItemIcon><PeopleIcon fontSize="small" /></ListItemIcon>
-            <ListItemText
-              primary="Customers"
-              primaryTypographyProps={{ style: this.textStyle(this.isActive('/customers')) }}
-            />
-          </ListItem>
+          {this.canShow('/customers') && (
+            <ListItem
+              button
+              style={this.menuItemStyle(this.isActive('/customers'))}
+              onClick={() => this.navigate('/customers')}
+            >
+              <ListItemIcon><PeopleIcon /></ListItemIcon>
+              <ListItemText primary="Customers" />
+            </ListItem>
+          )}
 
-          <ListItem
-            button
-            style={this.menuItemStyle(this.isActive('/prospects'))}
-            onClick={() => this.navigate('/prospects')}
-          >
-            <ListItemIcon><PersonAddIcon fontSize="small" /></ListItemIcon>
-            <ListItemText
-              primary="Prospects"
-              primaryTypographyProps={{ style: this.textStyle(this.isActive('/prospects')) }}
-            />
-          </ListItem>
+          {this.canShow('/prospects') && (
+            <ListItem
+              button
+              style={this.menuItemStyle(this.isActive('/prospects'))}
+              onClick={() => this.navigate('/prospects')}
+            >
+              <ListItemIcon><PersonAddIcon /></ListItemIcon>
+              <ListItemText primary="Prospects" />
+            </ListItem>
+          )}
 
-          <ListItem
-            button
-            style={this.menuItemStyle(this.isActive('/underwriting'))}
-            onClick={() => this.navigate('/underwriting')}
-          >
-            <ListItemIcon><GavelIcon fontSize="small" /></ListItemIcon>
-            <ListItemText
-              primary="Underwriting"
-              primaryTypographyProps={{ style: this.textStyle(this.isActive('/underwriting')) }}
-            />
-          </ListItem>
+          {this.canShow('/underwriting') && (
+            <ListItem
+              button
+              style={this.menuItemStyle(this.isActive('/underwriting'))}
+              onClick={() => this.navigate('/underwriting')}
+            >
+              <ListItemIcon><GavelIcon /></ListItemIcon>
+              <ListItemText primary="Underwriting" />
+            </ListItem>
+          )}
 
         </List>
 
-        {/* PUSH LOGOUT TO BOTTOM */}
         <div style={{ flexGrow: 1 }} />
-
         <Divider />
 
-        {/* ===== LOGOUT ===== */}
         <List>
           <ListItem
             button
-            style={{ padding: '10px 16px', margin: 8 }}
             onClick={() => {
               fetch('/auth/logout', { method: 'POST' }).finally(() => {
+                localStorage.removeItem('role')
                 this.navigate('/')
               })
             }}
           >
             <ListItemIcon>
-              <ExitToAppIcon fontSize="small" style={{ color: '#d32f2f' }} />
+              <ExitToAppIcon style={{ color: '#d32f2f' }} />
             </ListItemIcon>
-            <ListItemText
-              primary="Logout"
-              primaryTypographyProps={{
-                style: { fontSize: 13, color: '#d32f2f', fontWeight: 500 }
-              }}
-            />
+            <ListItemText primary="Logout" />
           </ListItem>
         </List>
       </Drawer>

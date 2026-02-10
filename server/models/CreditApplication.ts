@@ -4,6 +4,8 @@ export type ApplicationStatus =
   | 'APPROVED'
   | 'REJECTED'
 
+  export type ApplicationStage = 'INFO' | 'KYC' | 'UNDERWRITING' | 'DECISION'
+
 export interface CreditApplication {
   id: string
   applicantName: string
@@ -15,5 +17,6 @@ export interface CreditApplication {
   annualIncome: number
   purpose: string
   status: ApplicationStatus
+  stage: ApplicationStage
   createdAt: Date
 }

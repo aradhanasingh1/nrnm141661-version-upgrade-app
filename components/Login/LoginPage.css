@@ -1,0 +1,27 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.card {
+  width: 900px;
+  display: flex;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.left {
+  width: 50%;
+  padding: 40px;
+}
+
+.right {
+  width: 50%;
+  padding: 40px;
+}
+.login-container input::placeholder {
+  color: #888;  /* placeholder color */
+  font-size: 16px;
+}

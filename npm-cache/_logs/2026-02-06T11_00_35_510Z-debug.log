@@ -1,0 +1,45 @@
+0 info it worked if it ends with ok
+1 verbose cli [
+1 verbose cli   'C:\\Program Files\\nodejs\\node.exe',
+1 verbose cli   'C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js',
+1 verbose cli   'install',
+1 verbose cli   'material-ui@1.5.1',
+1 verbose cli   'material-ui-icons@1.0.0-beta.36'
+1 verbose cli ]
+2 info using npm@6.14.18
+3 info using node@v14.21.3
+4 verbose npm-session 29bc81028e378d86
+5 silly install loadCurrentTree
+6 silly install readLocalPackageData
+7 http fetch GET 200 https://registry.npmjs.org/material-ui-icons 477ms
+8 http fetch GET 200 https://registry.npmjs.org/material-ui 490ms
+9 silly fetchPackageMetaData error for material-ui@1.5.1 No matching version found for material-ui@1.5.1.
+10 http fetch GET 200 https://registry.npmjs.org/material-ui-icons/-/material-ui-icons-1.0.0-beta.36.tgz 173ms
+11 silly pacote version manifest for material-ui-icons@1.0.0-beta.36 fetched in 661ms
+12 warn deprecated material-ui-icons@1.0.0-beta.36: Use @material-ui/icons instead
+13 timing stage:rollbackFailedOptional Completed in 1ms
+14 timing stage:runTopLevelLifecycles Completed in 4580ms
+15 verbose type version
+16 verbose stack material-ui: No matching version found for material-ui@1.5.1.
+16 verbose stack     at pickManifest (C:\Program Files\nodejs\node_modules\npm\node_modules\npm-pick-manifest\index.js:122:13)
+16 verbose stack     at C:\Program Files\nodejs\node_modules\npm\node_modules\pacote\lib\fetchers\registry\manifest.js:24:14
+16 verbose stack     at tryCatcher (C:\Program Files\nodejs\node_modules\npm\node_modules\bluebird\js\release\util.js:16:23)
+16 verbose stack     at Promise._settlePromiseFromHandler (C:\Program Files\nodejs\node_modules\npm\node_modules\bluebird\js\release\promise.js:547:31)
+16 verbose stack     at Promise._settlePromise (C:\Program Files\nodejs\node_modules\npm\node_modules\bluebird\js\release\promise.js:604:18)
+16 verbose stack     at Promise._settlePromise0 (C:\Program Files\nodejs\node_modules\npm\node_modules\bluebird\js\release\promise.js:649:10)
+16 verbose stack     at Promise._settlePromises (C:\Program Files\nodejs\node_modules\npm\node_modules\bluebird\js\release\promise.js:729:18)
+16 verbose stack     at _drainQueueStep (C:\Program Files\nodejs\node_modules\npm\node_modules\bluebird\js\release\async.js:93:12)
+16 verbose stack     at _drainQueue (C:\Program Files\nodejs\node_modules\npm\node_modules\bluebird\js\release\async.js:86:9)
+16 verbose stack     at Async._drainQueues (C:\Program Files\nodejs\node_modules\npm\node_modules\bluebird\js\release\async.js:102:5)
+16 verbose stack     at Immediate.Async.drainQueues [as _onImmediate] (C:\Program Files\nodejs\node_modules\npm\node_modules\bluebird\js\release\async.js:15:14)
+16 verbose stack     at processImmediate (internal/timers.js:464:21)
+17 verbose cwd C:\Users\V00554\Downloads\nrnm141661-version-upgrade-app
+18 verbose Windows_NT 10.0.22631
+19 verbose argv "C:\\Program Files\\nodejs\\node.exe" "C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js" "install" "material-ui@1.5.1" "material-ui-icons@1.0.0-beta.36"
+20 verbose node v14.21.3
+21 verbose npm  v6.14.18
+22 error code ETARGET
+23 error notarget No matching version found for material-ui@1.5.1.
+24 error notarget In most cases you or one of your dependencies are requesting
+24 error notarget a package version that doesn't exist.
+25 verbose exit [ 1, true ]

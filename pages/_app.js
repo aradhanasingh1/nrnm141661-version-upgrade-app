@@ -1,30 +1,15 @@
-import React from 'react'
-import App, { Container } from 'next/app'
-import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
-import CssBaseline from '@material-ui/core/CssBaseline'
+// pages/_app.js   👈 rename to .js if .tsx keeps failing
 
-const theme = createMuiTheme()
+import React from "react";
+import { MuiThemeProvider, createMuiTheme } from "@material-ui/core/styles";
 
-class MyApp extends App {
-  componentDidMount() {
-    const jssStyles = document.querySelector('#jss-server-side')
-    if (jssStyles) {
-      jssStyles.parentNode.removeChild(jssStyles)
-    }
-  }
+const theme = createMuiTheme();
 
-  render() {
-    const { Component, pageProps } = this.props
-
-    return (
-      <Container>
-        <MuiThemeProvider theme={theme}>
-          <CssBaseline />
-          <Component {...pageProps} />
-        </MuiThemeProvider>
-      </Container>
-    )
-  }
+export default function MyApp(props) {
+  const { Component, pageProps } = props;
+  return (
+    <MuiThemeProvider theme={theme}>
+      <Component {...pageProps} />
+    </MuiThemeProvider>
+  );
 }
-
-export default MyApp

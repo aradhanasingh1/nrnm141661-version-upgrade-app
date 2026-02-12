@@ -29,6 +29,6 @@
     "skipLibCheck": true,
     "types": ["node", "express"]
   },
-  "include": ["server/**/*", "pages/**/*"],
+  "include": ["server/**/*", "pages/**/*", "theme.js"],
   "exclude": ["node_modules"]
 }

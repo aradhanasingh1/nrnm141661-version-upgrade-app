@@ -5,13 +5,18 @@ import {
   Button,
   Paper,
   Typography,
-  Snackbar
+  Snackbar,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
 } from '@material-ui/core'
 
 interface State {
   address: string
   dob: string
-  pan: string
+  idType: string
+  idNumber: string
   success: boolean
   error: string
   fieldErrors: any
@@ -21,7 +26,8 @@ class ApplicationInfo extends React.Component<any, State> {
   state: State = {
     address: '',
     dob: '',
-    pan: '',
+    idType: '',
+    idNumber: '',
     success: false,
     error: '',
     fieldErrors: {}
@@ -32,7 +38,7 @@ class ApplicationInfo extends React.Component<any, State> {
     return params.get('id')
   }
 
-  handleChange = (name: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+  handleChange = (name: string) => (e: any) => {
     const updatedErrors = Object.assign({}, this.state.fieldErrors)
     delete updatedErrors[name]
 
@@ -55,7 +61,8 @@ class ApplicationInfo extends React.Component<any, State> {
         body: JSON.stringify({
           address: this.state.address,
           dob: this.state.dob,
-          pan: this.state.pan
+          idType: this.state.idType,
+          idNumber: this.state.idNumber
         })
       })
 
@@ -104,7 +111,7 @@ class ApplicationInfo extends React.Component<any, State> {
             Applicant Information
           </Typography>
 
-          <Grid container spacing={16}>
+          <Grid container spacing={8}>
 
             <Grid item xs={12}>
               <TextField
@@ -137,15 +144,34 @@ class ApplicationInfo extends React.Component<any, State> {
             </Grid>
 
             <Grid item xs={12}>
+              <FormControl fullWidth error={!!fieldErrors.idType}>
+                <InputLabel>ID Type</InputLabel>
+                <Select
+                  value={this.state.idType}
+                  onChange={this.handleChange('idType')}
+                >
+                  <MenuItem value="PAN">PAN</MenuItem>
+                  <MenuItem value="AADHAR">AADHAR</MenuItem>
+                  <MenuItem value="PASSPORT">PASSPORT</MenuItem>
+                </Select>
+                {fieldErrors.idType && (
+                  <Typography color="error" variant="caption">
+                    {fieldErrors.idType[0]}
+                  </Typography>
+                )}
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12}>
               <TextField
-                label="PAN Number"
+                label="ID Number"
                 fullWidth
                 margin="normal"
-                value={this.state.pan}
-                onChange={this.handleChange('pan')}
-                error={!!fieldErrors.pan}
+                value={this.state.idNumber}
+                onChange={this.handleChange('idNumber')}
+                error={!!fieldErrors.idNumber}
                 helperText={
-                  fieldErrors.pan ? fieldErrors.pan[0] : ''
+                  fieldErrors.idNumber ? fieldErrors.idNumber[0] : ''
                 }
               />
             </Grid>

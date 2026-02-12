@@ -24,10 +24,22 @@ const createApplicationSchema = z.object({
   purpose: z.string().min(1, 'Purpose is required')
 })
 
+/* 🔥 INFO now stores dynamic ID */
 const updateInfoSchema = z.object({
   address: z.string().min(1, 'Address is required'),
   dob: z.string().min(1, 'Date of birth is required'),
-  pan: z.string().min(1, 'PAN is required')
+  idType: z.enum(['PAN', 'AADHAR', 'PASSPORT']),
+  idNumber: z.string().min(1, 'ID Number is required')
+})
+
+const kycSubmitSchema = z.object({
+  idType: z.enum(['PAN', 'AADHAR', 'PASSPORT']),
+  idNumber: z.string().min(1, 'ID Number is required'),
+  address: z.string().min(1, 'Address is required')
+})
+
+const kycCompleteSchema = z.object({
+  result: z.enum(['VERIFIED', 'FAILED'])
 })
 
 /* ======================================================
@@ -47,7 +59,7 @@ router.post('/', async (req, res) => {
     const db = await connect()
 
     const application: CreditApplication = {
-      id: new ObjectId().toHexString(), // required by interface
+      id: new ObjectId().toHexString(),
       ...validation.data,
       status: 'CREATED',
       stage: 'INFO',
@@ -67,7 +79,7 @@ router.post('/', async (req, res) => {
 })
 
 /* ======================================================
-   GET ALL APPLICATIONS
+   GET ALL
 ====================================================== */
 router.get('/', async (_req, res) => {
   try {
@@ -87,7 +99,7 @@ router.get('/', async (_req, res) => {
 })
 
 /* ======================================================
-   GET APPLICATION BY ID
+   GET BY ID
 ====================================================== */
 router.get('/:id', async (req, res) => {
   try {
@@ -114,8 +126,7 @@ router.get('/:id', async (req, res) => {
 })
 
 /* ======================================================
-   UPDATE INFO
-   PUT /applications/:id/info
+   UPDATE INFO (Now stores dynamic ID)
 ====================================================== */
 router.put('/:id/info', async (req, res) => {
   try {
@@ -140,6 +151,7 @@ router.put('/:id/info', async (req, res) => {
       {
         $set: {
           info: validation.data,
+          status: 'IN_PROGRESS',
           stage: 'KYC'
         }
       }
@@ -156,6 +168,124 @@ router.put('/:id/info', async (req, res) => {
   } catch (err) {
     console.error(err)
     res.status(500).json({ message: 'Failed to update application info' })
+  }
+})
+
+/* ======================================================
+   KYC SUBMIT
+====================================================== */
+router.put('/:id/kyc/submit', async (req, res) => {
+  try {
+    const validation = kycSubmitSchema.safeParse(req.body)
+
+    if (!validation.success) {
+      return res.status(400).json({
+        message: 'Validation failed',
+        errors: validation.error.flatten()
+      })
+    }
+
+    const db = await connect()
+    const { id } = req.params
+
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid application id' })
+    }
+
+    const result = await db.collection(COLLECTION).updateOne(
+      { _id: new ObjectId(id) },
+      {
+        $set: {
+          kyc: {
+            ...validation.data,
+            status: 'SUBMITTED'
+          }
+        }
+      }
+    )
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ message: 'Application not found' })
+    }
+
+    res.json({
+      success: true,
+      message: 'KYC submitted successfully'
+    })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ message: 'Failed to submit KYC' })
+  }
+})
+
+/* ======================================================
+   KYC COMPLETE (Dynamic DB Validation)
+====================================================== */
+router.put('/:id/kyc/complete', async (req, res) => {
+  try {
+    const validation = kycCompleteSchema.safeParse(req.body)
+
+    if (!validation.success) {
+      return res.status(400).json({
+        message: 'Validation failed',
+        errors: validation.error.flatten()
+      })
+    }
+
+    const db = await connect()
+    const { id } = req.params
+
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid application id' })
+    }
+
+    const app = await db.collection(COLLECTION).findOne({
+      _id: new ObjectId(id)
+    })
+
+    if (!app) {
+      return res.status(404).json({ message: 'Application not found' })
+    }
+
+    const storedIdType = app.info?.idType
+    const storedIdNumber = app.info?.idNumber
+
+    const enteredIdType = app.kyc?.idType
+    const enteredIdNumber = app.kyc?.idNumber
+
+    let finalResult = validation.data.result
+
+    /* 🔥 REAL DB VALIDATION */
+    if (
+      storedIdType !== enteredIdType ||
+      storedIdNumber !== enteredIdNumber
+    ) {
+      finalResult = 'FAILED'
+    }
+
+    const updateData: any = {
+      'kyc.status': finalResult
+    }
+
+    if (finalResult === 'VERIFIED') {
+      updateData.stage = 'UNDERWRITING'
+    }
+
+    await db.collection(COLLECTION).updateOne(
+      { _id: new ObjectId(id) },
+      { $set: updateData }
+    )
+
+    res.json({
+      success: true,
+      message:
+        finalResult === 'VERIFIED'
+          ? 'KYC verified. Stage moved to UNDERWRITING.'
+          : 'KYC failed due to ID mismatch.'
+    })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ message: 'Failed to complete KYC' })
   }
 })
 

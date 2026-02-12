@@ -10,32 +10,55 @@ import {
   FormControl,
   InputLabel,
   Select,
-  MenuItem,
-  FormControlLabel,
-  Switch
+  MenuItem
 } from '@material-ui/core'
 
 interface State {
   idType: string
   idNumber: string
   address: string
-  simulateVerified: boolean
   fieldErrors: any
   success: boolean
   kycStatus: string
   apiMessage: string
+  role: string
+  loading: boolean
 }
 
 class ApplicationKYC extends React.Component<any, State> {
-  state: State = {
-    idType: '',
-    idNumber: '',
-    address: '',
-    simulateVerified: true,
-    fieldErrors: {},
-    success: false,
-    kycStatus: '',
-    apiMessage: ''
+  constructor(props: any) {
+    super(props)
+
+    this.state = {
+      idType: '',
+      idNumber: '',
+      address: '',
+      fieldErrors: {},
+      success: false,
+      kycStatus: '',
+      apiMessage: '',
+      role: 'USER',
+      loading: true
+    }
+  }
+
+  async componentDidMount() {
+    if (typeof window !== 'undefined') {
+      const roleFromStorage = localStorage.getItem('role')
+      const id = this.getApplicationId()
+
+      const res = await fetch(`/api/applications/${id}`)
+      const app = await res.json()
+
+      this.setState({
+        role: roleFromStorage || 'USER',
+        idType: app.kyc?.idType || '',
+        idNumber: app.kyc?.idNumber || '',
+        address: app.kyc?.address || '',
+        kycStatus: app.kyc?.status || '',
+        loading: false
+      })
+    }
   }
 
   getApplicationId() {
@@ -43,97 +66,89 @@ class ApplicationKYC extends React.Component<any, State> {
     return params.get('id')
   }
 
-  handleChange = (name: string) => (e: any) => {
-    const updatedErrors = Object.assign({}, this.state.fieldErrors)
-    updatedErrors[name] = undefined
-
-    const newState: any = {}
-    newState[name] = e.target.value
-    newState.fieldErrors = updatedErrors
-
-    this.setState(newState)
+  goBack = () => {
+    const id = this.getApplicationId()
+    window.location.href = '/application?id=' + id
   }
 
-  handleToggle = () => {
-    this.setState({
-      simulateVerified: !this.state.simulateVerified
-    })
+  handleChange(name: string) {
+    return (e: any) => {
+      var updatedErrors = Object.assign({}, this.state.fieldErrors)
+      updatedErrors[name] = undefined
+
+      var newState: any = {}
+      newState[name] = e.target.value
+      newState.fieldErrors = updatedErrors
+
+      this.setState(newState)
+    }
   }
 
   submitKYC = async () => {
     const id = this.getApplicationId()
-    const { idType, idNumber, address, simulateVerified } = this.state
-
-    const errors: any = {}
-    if (!idType) errors.idType = 'ID Type is required'
-    if (!idNumber) errors.idNumber = 'ID Number is required'
-    if (!address) errors.address = 'Address is required'
-
-    if (Object.keys(errors).length > 0) {
-      this.setState({ fieldErrors: errors })
-      return
-    }
+    const { idType, idNumber, address } = this.state
 
     try {
-      /* ================= STEP 1: SUBMIT ================= */
-      const submitRes = await fetch(`/api/applications/${id}/kyc/submit`, {
+      const res = await fetch(`/api/applications/${id}/kyc/submit`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          idType,
-          idNumber,
-          address
+          idType: idType,
+          idNumber: idNumber,
+          address: address
         })
       })
 
-      if (!submitRes.ok) {
-        const err = await submitRes.json()
-        alert(err.message || 'KYC submission failed')
+      const data = await res.json()
+
+      if (!res.ok) {
+        alert(data.message)
         return
       }
-
-      /* ================= STEP 2: COMPLETE ================= */
-      const completeRes = await fetch(`/api/applications/${id}/kyc/complete`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          result: simulateVerified ? 'VERIFIED' : 'FAILED'
-        })
-      })
-
-      const completeData = await completeRes.json()
-
-      if (!completeRes.ok) {
-        alert(completeData.message || 'KYC completion failed')
-        return
-      }
-
-      /* 🔥 USE BACKEND FINAL RESULT (NOT FRONTEND TOGGLE) */
-      const finalStatus =
-        completeData.message?.includes('verified') ||
-        completeData.message?.includes('UNDERWRITING')
-          ? 'VERIFIED'
-          : 'FAILED'
 
       this.setState({
         success: true,
-        kycStatus: finalStatus,
-        apiMessage: completeData.message
+        kycStatus: 'SUBMITTED',
+        apiMessage: 'KYC submitted successfully.'
       })
 
-      if (finalStatus === 'VERIFIED') {
-        setTimeout(function () {
-          window.location.href =
-            '/application?id=' + id
-        }, 1500)
-      }
+      setTimeout(() => {
+        window.location.href = '/application?id=' + id
+      }, 1500)
+
     } catch (err) {
-      alert('Unexpected error occurred')
+      alert('Error submitting KYC')
     }
   }
 
-  goBack = () => {
-    window.history.back()
+  verifyKYC = async (result: 'VERIFIED' | 'FAILED') => {
+    const id = this.getApplicationId()
+
+    const res = await fetch(`/api/applications/${id}/kyc/complete`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-role': this.state.role
+      },
+      body: JSON.stringify({ result: result })
+    })
+
+    const data = await res.json()
+
+    if (!res.ok) {
+      alert(data.message)
+      return
+    }
+
+    this.setState({
+      success: true,
+      kycStatus: result,
+      apiMessage: data.message
+    })
+
+    setTimeout(() => {
+      window.location.href = '/application?id=' + id
+    }, 1500)
   }
 
   render() {
@@ -141,12 +156,18 @@ class ApplicationKYC extends React.Component<any, State> {
       idType,
       idNumber,
       address,
-      simulateVerified,
-      fieldErrors,
       success,
       kycStatus,
-      apiMessage
+      apiMessage,
+      role,
+      loading
     } = this.state
+
+    if (loading) {
+      return <div style={{ padding: 50 }}>Loading...</div>
+    }
+
+    const isAdmin = role === 'ADMIN'
 
     return (
       <div
@@ -159,14 +180,7 @@ class ApplicationKYC extends React.Component<any, State> {
           padding: 24
         }}
       >
-        <Paper
-          elevation={3}
-          style={{
-            width: 520,
-            padding: 32,
-            borderRadius: 8
-          }}
-        >
+        <Paper elevation={3} style={{ width: 520, padding: 32 }}>
           <Typography
             variant="title"
             style={{ marginBottom: 24, fontWeight: 600 }}
@@ -175,21 +189,24 @@ class ApplicationKYC extends React.Component<any, State> {
           </Typography>
 
           {kycStatus && (
-            <div style={{ marginBottom: 20 }}>
-              <Chip
-                label={'KYC Status: ' + kycStatus}
-                color={
+            <Chip
+              label={'KYC Status: ' + kycStatus}
+              style={{
+                marginBottom: 20,
+                backgroundColor:
                   kycStatus === 'VERIFIED'
-                    ? 'primary'
-                    : 'secondary'
-                }
-              />
-            </div>
+                    ? '#4caf50'
+                    : kycStatus === 'FAILED'
+                    ? '#f44336'
+                    : '#ff9800',
+                color: '#fff'
+              }}
+            />
           )}
 
           <Grid container spacing={8}>
             <Grid item xs={12}>
-              <FormControl fullWidth error={!!fieldErrors.idType}>
+              <FormControl fullWidth disabled={isAdmin}>
                 <InputLabel>ID Type</InputLabel>
                 <Select
                   value={idType}
@@ -199,55 +216,29 @@ class ApplicationKYC extends React.Component<any, State> {
                   <MenuItem value="PAN">PAN</MenuItem>
                   <MenuItem value="PASSPORT">Passport</MenuItem>
                 </Select>
-                {fieldErrors.idType && (
-                  <Typography color="error" variant="caption">
-                    {fieldErrors.idType}
-                  </Typography>
-                )}
               </FormControl>
             </Grid>
 
             <Grid item xs={12}>
               <TextField
-                // variant="contained"
                 label="ID Number"
                 fullWidth
                 value={idNumber}
+                disabled={isAdmin}
                 onChange={this.handleChange('idNumber')}
-                error={!!fieldErrors.idNumber}
-                helperText={fieldErrors.idNumber}
               />
             </Grid>
 
             <Grid item xs={12}>
               <TextField
-                // variant="outlined"
                 label="Address"
                 fullWidth
                 value={address}
+                disabled={isAdmin}
                 onChange={this.handleChange('address')}
-                error={!!fieldErrors.address}
-                helperText={fieldErrors.address}
               />
             </Grid>
           </Grid>
-
-          <div style={{ marginTop: 20 }}>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={simulateVerified}
-                  onChange={this.handleToggle}
-                  color="primary"
-                />
-              }
-              label={
-                simulateVerified
-                  ? 'Simulate VERIFIED'
-                  : 'Simulate FAILED'
-              }
-            />
-          </div>
 
           <div
             style={{
@@ -256,17 +247,50 @@ class ApplicationKYC extends React.Component<any, State> {
               justifyContent: 'space-between'
             }}
           >
-            <Button variant="contained" color="primary" onClick={this.goBack}>
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={this.goBack}
+            >
               ← Back
             </Button>
 
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={this.submitKYC}
-            >
-              Submit KYC
-            </Button>
+            {!isAdmin && (
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={this.submitKYC}
+              >
+                Submit KYC
+              </Button>
+            )}
+
+            {isAdmin && kycStatus === 'SUBMITTED' && (
+              <div>
+                <Button
+                  variant="contained"
+                  style={{
+                    background: '#4caf50',
+                    color: '#fff',
+                    marginRight: 10
+                  }}
+                  onClick={() => this.verifyKYC('VERIFIED')}
+                >
+                  Verify
+                </Button>
+
+                <Button
+                  variant="contained"
+                  style={{
+                    background: '#f44336',
+                    color: '#fff'
+                  }}
+                  onClick={() => this.verifyKYC('FAILED')}
+                >
+                  Reject
+                </Button>
+              </div>
+            )}
           </div>
         </Paper>
 
@@ -274,18 +298,8 @@ class ApplicationKYC extends React.Component<any, State> {
           open={success}
           autoHideDuration={2500}
           onClose={() => this.setState({ success: false })}
-          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         >
-          <Paper
-            style={{
-              padding: '10px 16px',
-              background:
-                kycStatus === 'VERIFIED'
-                  ? '#4caf50'
-                  : '#f44336',
-              color: '#fff'
-            }}
-          >
+          <Paper style={{ padding: 10 }}>
             {apiMessage}
           </Paper>
         </Snackbar>

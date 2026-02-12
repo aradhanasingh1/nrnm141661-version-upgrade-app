@@ -6,7 +6,10 @@ import {
   Chip,
   Stepper,
   Step,
-  StepLabel
+  StepLabel,
+  Grid,
+  Divider,
+  CircularProgress
 } from '@material-ui/core'
 
 interface State {
@@ -16,7 +19,7 @@ interface State {
 
 const steps = ['Info', 'KYC', 'Underwriting', 'Decision']
 
-const stageIndexMap: Record<string, number> = {
+const stageIndexMap: { [key: string]: number } = {
   INFO: 0,
   KYC: 1,
   UNDERWRITING: 2,
@@ -47,7 +50,7 @@ class ApplicationDetail extends React.Component<any, State> {
 
       const data = await res.json()
       this.setState({ app: data, loading: false })
-    } catch (err) {
+    } catch (error) {
       this.setState({ loading: false, app: null })
     }
   }
@@ -58,7 +61,7 @@ class ApplicationDetail extends React.Component<any, State> {
 
   handleContinue = () => {
     const { app } = this.state
-    const stage = app?.stage || app?.currentStage
+    const stage = app && (app.stage || app.currentStage)
     if (!stage) return
 
     const id = app._id || app.id
@@ -80,14 +83,22 @@ class ApplicationDetail extends React.Component<any, State> {
     const { app, loading } = this.state
 
     if (loading) {
-      return <Typography>Loading...</Typography>
+      return (
+        <div style={{ textAlign: 'center', padding: 50 }}>
+          <CircularProgress />
+        </div>
+      )
     }
 
     if (!app) {
       return (
-        <Paper style={{ padding: 16 }}>
-          <Typography>No application found</Typography>
-        </Paper>
+        <div style={{ padding: 32 }}>
+          <Paper style={{ padding: 24 }}>
+            <Typography variant="title">
+              No application found
+            </Typography>
+          </Paper>
+        </div>
       )
     }
 
@@ -97,11 +108,23 @@ class ApplicationDetail extends React.Component<any, State> {
         ? stageIndexMap[stage]
         : 0
 
+    const info = app.info
+    const kyc = app.kyc
+
+    const hasInfo =
+      info &&
+      (info.address || info.dob || info.idType || info.idNumber)
+
+    const hasKyc =
+      kyc &&
+      (kyc.idType || kyc.idNumber || kyc.address || kyc.status)
+
     return (
-      <div style={{ padding: 24, background: '#f4f6f8', minHeight: '100vh' }}>
-        {/* ================= STEPPER ================= */}
+      <div style={{ padding: 5, background: '#f4f6f8', minHeight: '30vh' }}>
+
+        {/* ================= PROGRESS ================= */}
         <Paper style={{ padding: 24, marginBottom: 24 }}>
-          <Typography style={{ fontSize: 18, fontWeight: 500, marginBottom: 16 }}>
+          <Typography variant="title" style={{ fontWeight: 600, marginBottom: 20 }}>
             Application Progress
           </Typography>
 
@@ -114,67 +137,190 @@ class ApplicationDetail extends React.Component<any, State> {
           </Stepper>
         </Paper>
 
-        {/* ================= DETAILS ================= */}
-        <Paper style={{ padding: 24 }}>
-          <Typography variant="title" style={{ marginBottom: 16 }}>
+        {/* ================= APPLICATION DETAILS ================= */}
+        <Paper style={{ padding: 24, marginBottom: 24 }}>
+          <Typography variant="title" style={{ fontWeight: 600, marginBottom: 16 }}>
             Application Details
           </Typography>
 
-          {/* ===== CHIPS ===== */}
-          <div style={{ marginBottom: 16 }}>
+          <div style={{ marginBottom: 20 }}>
             <Chip
               label={`Stage: ${stage}`}
               color="primary"
-              style={{ marginRight: 8 }}
+              style={{ marginRight: 12 }}
             />
             <Chip
               label={`Status: ${app.currentStatus || app.status}`}
             />
           </div>
 
-          {/* ===== DETAILS ===== */}
-          <Typography><b>ID:</b> {app._id || app.id}</Typography>
-          <Typography><b>Applicant:</b> {app.applicantName}</Typography>
-          <Typography><b>Email:</b> {app.email}</Typography>
-          <Typography><b>Mobile:</b> {app.mobile}</Typography>
-          <Typography><b>Loan Amount:</b> {app.loanAmount}</Typography>
-          <Typography><b>Loan Type:</b> {app.loanType}</Typography>
-          <Typography><b>Employment Type:</b> {app.employmentType}</Typography>
-          <Typography><b>Annual Income:</b> {app.annualIncome}</Typography>
-          <Typography><b>Purpose:</b> {app.purpose}</Typography>
+          <Divider style={{ marginBottom: 20 }} />
 
-          <Typography style={{ marginTop: 8 }}>
-            <b>Created At:</b>{' '}
-            {app.createdAt
-              ? new Date(app.createdAt).toLocaleString()
-              : '-'}
-          </Typography>
+          <Grid container spacing={8}>
+            {app._id || app.id ? (
+              <Grid item xs={12} md={6}>
+                <Typography><strong>Application ID:</strong></Typography>
+                <Typography color="textSecondary">{app._id || app.id}</Typography>
+              </Grid>
+            ) : null}
 
-          {/* ===== ACTION BUTTONS ===== */}
-          <div
-            style={{
-              marginTop: 32,
-              display: 'flex',
-              justifyContent: 'space-between'
-            }}
-          >
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={this.goBack}
-            >
-              ← Back
-            </Button>
+            {app.applicantName && (
+              <Grid item xs={12} md={6}>
+                <Typography><strong>Applicant Name:</strong></Typography>
+                <Typography color="textSecondary">{app.applicantName}</Typography>
+              </Grid>
+            )}
 
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={this.handleContinue}
-            >
-              Continue
-            </Button>
-          </div>
+            {app.email && (
+              <Grid item xs={12} md={6}>
+                <Typography><strong>Email:</strong></Typography>
+                <Typography color="textSecondary">{app.email}</Typography>
+              </Grid>
+            )}
+
+            {app.mobile && (
+              <Grid item xs={12} md={6}>
+                <Typography><strong>Mobile:</strong></Typography>
+                <Typography color="textSecondary">{app.mobile}</Typography>
+              </Grid>
+            )}
+
+            {app.loanAmount && (
+              <Grid item xs={12} md={6}>
+                <Typography><strong>Loan Amount:</strong></Typography>
+                <Typography color="primary" style={{ fontWeight: 600 }}>
+                  ₹ {app.loanAmount}
+                </Typography>
+              </Grid>
+            )}
+
+            {app.annualIncome && (
+              <Grid item xs={12} md={6}>
+                <Typography><strong>Annual Income:</strong></Typography>
+                <Typography color="textSecondary">
+                  ₹ {app.annualIncome}
+                </Typography>
+              </Grid>
+            )}
+          </Grid>
         </Paper>
+
+        {/* ================= INFO DETAILS ================= */}
+        {hasInfo && (
+          <Paper style={{ padding: 24, marginBottom: 24 }}>
+            <Typography variant="title" style={{ fontWeight: 600, marginBottom: 16 }}>
+              Info Details
+            </Typography>
+
+            <Divider style={{ marginBottom: 20 }} />
+
+            <Grid container spacing={8}>
+              {info.address && (
+                <Grid item xs={12} md={6}>
+                  <Typography><strong>Address:</strong></Typography>
+                  <Typography color="textSecondary">{info.address}</Typography>
+                </Grid>
+              )}
+
+              {info.dob && (
+                <Grid item xs={12} md={6}>
+                  <Typography><strong>Date of Birth:</strong></Typography>
+                  <Typography color="textSecondary">
+                    {new Date(info.dob).toLocaleDateString()}
+                  </Typography>
+                </Grid>
+              )}
+
+              {info.idType && (
+                <Grid item xs={12} md={6}>
+                  <Typography><strong>ID Type:</strong></Typography>
+                  <Typography color="textSecondary">{info.idType}</Typography>
+                </Grid>
+              )}
+
+              {info.idNumber && (
+                <Grid item xs={12} md={6}>
+                  <Typography><strong>ID Number:</strong></Typography>
+                  <Typography color="textSecondary">{info.idNumber}</Typography>
+                </Grid>
+              )}
+            </Grid>
+          </Paper>
+        )}
+
+        {/* ================= KYC DETAILS ================= */}
+        {hasKyc && (
+          <Paper style={{ padding: 24, marginBottom: 24 }}>
+            <Typography variant="title" style={{ fontWeight: 600, marginBottom: 16 }}>
+              KYC Details
+            </Typography>
+
+            <Divider style={{ marginBottom: 20 }} />
+
+            <Grid container spacing={8}>
+              {kyc.idType && (
+                <Grid item xs={12} md={6}>
+                  <Typography><strong>ID Type:</strong></Typography>
+                  <Typography color="textSecondary">{kyc.idType}</Typography>
+                </Grid>
+              )}
+
+              {kyc.idNumber && (
+                <Grid item xs={12} md={6}>
+                  <Typography><strong>ID Number:</strong></Typography>
+                  <Typography color="textSecondary">{kyc.idNumber}</Typography>
+                </Grid>
+              )}
+
+              {kyc.address && (
+                <Grid item xs={12} md={6}>
+                  <Typography><strong>Address:</strong></Typography>
+                  <Typography color="textSecondary">{kyc.address}</Typography>
+                </Grid>
+              )}
+
+              {kyc.status && (
+                <Grid item xs={12} md={6}>
+                  <Typography><strong>Status:</strong></Typography>
+                  <Chip
+                    label={kyc.status}
+                    style={{
+                      backgroundColor:
+                        kyc.status === 'VERIFIED' ? '#4caf50' : '#f44336',
+                      color: '#fff'
+                    }}
+                  />
+                </Grid>
+              )}
+            </Grid>
+          </Paper>
+        )}
+
+        {/* ================= ACTION BUTTONS ================= */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            marginTop: 20
+          }}
+        >
+          <Button
+            variant="outlined"
+            color="primary"
+            onClick={this.goBack}
+          >
+            ← Back
+          </Button>
+
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={this.handleContinue}
+          >
+            Continue →
+          </Button>
+        </div>
+
       </div>
     )
   }

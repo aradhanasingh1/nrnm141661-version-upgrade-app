@@ -40,7 +40,6 @@ class ApplicationDetail extends React.Component<any, State> {
 
     try {
       const res = await fetch(`/api/applications/${id}`)
-
       if (!res.ok) {
         this.setState({ loading: false, app: null })
         return
@@ -48,7 +47,7 @@ class ApplicationDetail extends React.Component<any, State> {
 
       const data = await res.json()
       this.setState({ app: data, loading: false })
-    } catch (e) {
+    } catch (err) {
       this.setState({ loading: false, app: null })
     }
   }
@@ -59,19 +58,22 @@ class ApplicationDetail extends React.Component<any, State> {
 
   handleContinue = () => {
     const { app } = this.state
-    if (!app?.stage) return
+    const stage = app?.stage || app?.currentStage
+    if (!stage) return
 
-    if (app.stage === 'INFO')
-      window.location.href = `/application/info?id=${app._id}`
+    const id = app._id || app.id
 
-    if (app.stage === 'KYC')
-      window.location.href = `/application/kyc?id=${app._id}`
+    if (stage === 'INFO')
+      window.location.href = `/application/info?id=${id}`
 
-    if (app.stage === 'UNDERWRITING')
-      window.location.href = `/application/underwriting?id=${app._id}`
+    if (stage === 'KYC')
+      window.location.href = `/application/kyc?id=${id}`
 
-    if (app.stage === 'DECISION')
-      window.location.href = `/application/decision?id=${app._id}`
+    if (stage === 'UNDERWRITING')
+      window.location.href = `/application/underwriting?id=${id}`
+
+    if (stage === 'DECISION')
+      window.location.href = `/application/decision?id=${id}`
   }
 
   render() {
@@ -89,9 +91,10 @@ class ApplicationDetail extends React.Component<any, State> {
       )
     }
 
+    const stage = app.stage || app.currentStage
     const activeStep =
-      stageIndexMap[app.stage] !== undefined
-        ? stageIndexMap[app.stage]
+      stageIndexMap[stage] !== undefined
+        ? stageIndexMap[stage]
         : 0
 
     return (
@@ -117,24 +120,19 @@ class ApplicationDetail extends React.Component<any, State> {
             Application Details
           </Typography>
 
-          {/* CHIPS */}
+          {/* ===== CHIPS ===== */}
           <div style={{ marginBottom: 16 }}>
             <Chip
-              label={`Stage: ${app.stage}`}
+              label={`Stage: ${stage}`}
               color="primary"
               style={{ marginRight: 8 }}
             />
             <Chip
               label={`Status: ${app.currentStatus || app.status}`}
-              color={
-                app.currentStatus === 'COMPLETED'
-                  ? 'secondary'
-                  : 'default'
-              }
             />
           </div>
 
-          {/* DETAILS */}
+          {/* ===== DETAILS ===== */}
           <Typography><b>ID:</b> {app._id || app.id}</Typography>
           <Typography><b>Applicant:</b> {app.applicantName}</Typography>
           <Typography><b>Email:</b> {app.email}</Typography>
@@ -152,7 +150,7 @@ class ApplicationDetail extends React.Component<any, State> {
               : '-'}
           </Typography>
 
-          {/* ACTION BUTTONS */}
+          {/* ===== ACTION BUTTONS ===== */}
           <div
             style={{
               marginTop: 32,
@@ -160,7 +158,11 @@ class ApplicationDetail extends React.Component<any, State> {
               justifyContent: 'space-between'
             }}
           >
-            <Button variant="contained" color="primary" onClick={this.goBack}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={this.goBack}
+            >
               ← Back
             </Button>
 

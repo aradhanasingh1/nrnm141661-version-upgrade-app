@@ -13,7 +13,7 @@ export default function Offers() {
       <Typography variant="title" gutterBottom>
         Available Offers
       </Typography>
-      <Grid container spacing={2}>
+      <Grid container spacing={8}>
         {dummyOffers.map((offer) => (
           <Grid item xs={12} sm={6} md={4} key={offer.id}>
             <Card>

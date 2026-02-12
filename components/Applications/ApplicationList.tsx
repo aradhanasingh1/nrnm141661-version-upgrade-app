@@ -102,6 +102,7 @@ class ApplicationsList extends React.Component<{}, State> {
               <TableCell>Loan Type</TableCell>
               <TableCell>Employment Type</TableCell>
               <TableCell>Annual Income</TableCell>
+              <TableCell>Stage</TableCell>
               <TableCell>Status</TableCell>
             </TableRow>
           </TableHead>
@@ -129,6 +130,7 @@ class ApplicationsList extends React.Component<{}, State> {
                 <TableCell>{app.loanType}</TableCell>
                 <TableCell>{app.employmentType}</TableCell>
                 <TableCell>{app.annualIncome}</TableCell>
+                <TableCell>{app.stage}</TableCell>
                 <TableCell>{app.status}</TableCell>
               </TableRow>
             ))}

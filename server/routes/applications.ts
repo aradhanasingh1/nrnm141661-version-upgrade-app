@@ -42,6 +42,13 @@ const kycCompleteSchema = z.object({
   result: z.enum(['VERIFIED', 'FAILED'])
 })
 
+const underwritingSchema = z.object({
+  income: z.coerce.number().min(0),
+  expenses: z.coerce.number().min(0),
+  creditScore: z.coerce.number().min(300).max(900)
+})
+
+
 /* ======================================================
    CREATE APPLICATION
 ====================================================== */
@@ -286,6 +293,82 @@ router.put('/:id/kyc/complete', async (req, res) => {
   } catch (err) {
     console.error(err)
     res.status(500).json({ message: 'Failed to complete KYC' })
+  }
+})
+
+/* ======================================================
+   UNDERWRITING START 
+====================================================== */
+
+router.put('/:id/underwriting/start', async (req, res) => {
+  try {
+    const validation = underwritingSchema.safeParse(req.body)
+
+    if (!validation.success) {
+      return res.status(400).json({
+        message: 'Validation failed',
+        errors: validation.error.flatten()
+      })
+    }
+
+    const db = await connect()
+    const { id } = req.params
+
+    await db.collection(COLLECTION).updateOne(
+      { _id: new ObjectId(id) },
+      {
+        $set: {
+          underwriting: {
+            ...validation.data,
+            status: 'SUBMITTED'
+          },
+          stage: 'UNDERWRITING'
+        }
+      }
+    )
+
+    res.json({
+      success: true,
+      message: 'Underwriting submitted successfully.'
+    })
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to submit underwriting' })
+  }
+})
+
+/* ======================================================
+   UNDERWRITING COMPLETE 
+====================================================== */
+
+router.put('/:id/underwriting/complete', async (req, res) => {
+  try {
+    const role = req.headers['x-role']
+
+    if (role !== 'ADMIN') {
+      return res.status(403).json({
+        message: 'Only ADMIN can complete underwriting'
+      })
+    }
+
+    const db = await connect()
+    const { id } = req.params
+
+    await db.collection(COLLECTION).updateOne(
+      { _id: new ObjectId(id) },
+      {
+        $set: {
+          'underwriting.status': 'COMPLETED',
+          stage: 'DECISION'
+        }
+      }
+    )
+
+    res.json({
+      success: true,
+      message: 'Underwriting completed. Stage moved to DECISION.'
+    })
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to complete underwriting' })
   }
 })
 

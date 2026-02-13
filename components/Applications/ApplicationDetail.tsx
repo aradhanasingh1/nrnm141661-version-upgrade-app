@@ -110,6 +110,7 @@ class ApplicationDetail extends React.Component<any, State> {
 
     const info = app.info
     const kyc = app.kyc
+    const underwriting = app.underwriting
 
     const hasInfo =
       info &&
@@ -118,6 +119,13 @@ class ApplicationDetail extends React.Component<any, State> {
     const hasKyc =
       kyc &&
       (kyc.idType || kyc.idNumber || kyc.address || kyc.status)
+
+    const hasUnderwriting =
+      underwriting &&
+      (underwriting.income ||
+        underwriting.expenses ||
+        underwriting.creditScore ||
+        underwriting.status)
 
     return (
       <div style={{ padding: 5, background: '#f4f6f8', minHeight: '30vh' }}>
@@ -211,9 +219,7 @@ class ApplicationDetail extends React.Component<any, State> {
             <Typography variant="title" style={{ fontWeight: 600, marginBottom: 16 }}>
               Info Details
             </Typography>
-
             <Divider style={{ marginBottom: 20 }} />
-
             <Grid container spacing={8}>
               {info.address && (
                 <Grid item xs={12} md={6}>
@@ -221,7 +227,6 @@ class ApplicationDetail extends React.Component<any, State> {
                   <Typography color="textSecondary">{info.address}</Typography>
                 </Grid>
               )}
-
               {info.dob && (
                 <Grid item xs={12} md={6}>
                   <Typography><strong>Date of Birth:</strong></Typography>
@@ -230,14 +235,12 @@ class ApplicationDetail extends React.Component<any, State> {
                   </Typography>
                 </Grid>
               )}
-
               {info.idType && (
                 <Grid item xs={12} md={6}>
                   <Typography><strong>ID Type:</strong></Typography>
                   <Typography color="textSecondary">{info.idType}</Typography>
                 </Grid>
               )}
-
               {info.idNumber && (
                 <Grid item xs={12} md={6}>
                   <Typography><strong>ID Number:</strong></Typography>
@@ -254,9 +257,7 @@ class ApplicationDetail extends React.Component<any, State> {
             <Typography variant="title" style={{ fontWeight: 600, marginBottom: 16 }}>
               KYC Details
             </Typography>
-
             <Divider style={{ marginBottom: 20 }} />
-
             <Grid container spacing={8}>
               {kyc.idType && (
                 <Grid item xs={12} md={6}>
@@ -264,21 +265,18 @@ class ApplicationDetail extends React.Component<any, State> {
                   <Typography color="textSecondary">{kyc.idType}</Typography>
                 </Grid>
               )}
-
               {kyc.idNumber && (
                 <Grid item xs={12} md={6}>
                   <Typography><strong>ID Number:</strong></Typography>
                   <Typography color="textSecondary">{kyc.idNumber}</Typography>
                 </Grid>
               )}
-
               {kyc.address && (
                 <Grid item xs={12} md={6}>
                   <Typography><strong>Address:</strong></Typography>
                   <Typography color="textSecondary">{kyc.address}</Typography>
                 </Grid>
               )}
-
               {kyc.status && (
                 <Grid item xs={12} md={6}>
                   <Typography><strong>Status:</strong></Typography>
@@ -286,7 +284,60 @@ class ApplicationDetail extends React.Component<any, State> {
                     label={kyc.status}
                     style={{
                       backgroundColor:
-                        kyc.status === 'VERIFIED' ? '#4caf50' : '#f44336',
+                        kyc.status === 'VERIFIED'
+                          ? '#4caf50'
+                          : '#f44336',
+                      color: '#fff'
+                    }}
+                  />
+                </Grid>
+              )}
+            </Grid>
+          </Paper>
+        )}
+
+        {/* ================= UNDERWRITING DETAILS ================= */}
+        {hasUnderwriting && (
+          <Paper style={{ padding: 24, marginBottom: 24 }}>
+            <Typography variant="title" style={{ fontWeight: 600, marginBottom: 16 }}>
+              Underwriting Details
+            </Typography>
+            <Divider style={{ marginBottom: 20 }} />
+            <Grid container spacing={8}>
+              {underwriting.income && (
+                <Grid item xs={12} md={6}>
+                  <Typography><strong>Monthly Income:</strong></Typography>
+                  <Typography color="textSecondary">
+                    ₹ {underwriting.income}
+                  </Typography>
+                </Grid>
+              )}
+              {underwriting.expenses && (
+                <Grid item xs={12} md={6}>
+                  <Typography><strong>Monthly Expenses:</strong></Typography>
+                  <Typography color="textSecondary">
+                    ₹ {underwriting.expenses}
+                  </Typography>
+                </Grid>
+              )}
+              {underwriting.creditScore && (
+                <Grid item xs={12} md={6}>
+                  <Typography><strong>Credit Score:</strong></Typography>
+                  <Typography color="textSecondary">
+                    {underwriting.creditScore}
+                  </Typography>
+                </Grid>
+              )}
+              {underwriting.status && (
+                <Grid item xs={12} md={6}>
+                  <Typography><strong>Status:</strong></Typography>
+                  <Chip
+                    label={underwriting.status}
+                    style={{
+                      backgroundColor:
+                        underwriting.status === 'COMPLETED'
+                          ? '#4caf50'
+                          : '#ff9800',
                       color: '#fff'
                     }}
                   />
